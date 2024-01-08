@@ -8,11 +8,21 @@ This is a small Ruby script that runs the [Z80 tests](https://github.com/raddad7
 run-jsmoo-z80-test <JSON-file>...
 ```
 
-If `-` is passed as an argument, the script will read the JSON data from the standard input, run the tests it contains, and exit. Subsequent arguments will be ignored.
+If `-` is passed as an argument, the script will read the JSON data from the standard input, run the tests it contains, and exit. Subsequent arguments will be ignored:
+
+Examples:
+
+```shell
+# Run the script with specific JSON files
+run-jsmoo-z80-test file1.json file2.json
+
+# Run the script with JSON data from standard input
+echo '<JSON>' | run-jsmoo-z80-test -
+```
 
 ## TL;DR
 
-Once you have installed the dependencies, clone this repository and the main branch of the JSMoo repository. Then run the script passing the test files to run as arguments:
+Once you have installed the dependencies, clone this repository and the main branch of the JSMoo repository. Next, run the script, passing it the paths to the JSON files you want to process:
 
 ```shell
 mkdir work && cd work
