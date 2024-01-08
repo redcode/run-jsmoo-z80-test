@@ -8,7 +8,7 @@ This is a small Ruby script that runs the [Z80 tests](https://github.com/raddad7
 run-jsmoo-z80-test <JSON-file>...
 ```
 
-If `-` is passed as an argument, the script will read the JSON data from the standard input, run the tests it contains, and exit. Subsequent arguments will be ignored:
+If `-` is passed as an argument, the script will read the JSON data from the standard input, run the tests it contains, and exit. Subsequent arguments will be ignored.
 
 Examples:
 
