@@ -13,7 +13,7 @@ keywords:
   - test
   - Z80
   - Zilog
-license: MIT
+license: 0BSD
 message: If you use this software, please cite it using these metadata.
 repository-code: https://github.com/redcode/run-jsmoo-z80-test
 title: run-jsmoo-z80-test
