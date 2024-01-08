@@ -1,0 +1,22 @@
+abstract: A ruby script for running JSMoo's Z80 tests.
+authors:
+  - family-names: "Sainz de Baranda y Goñi"
+    given-names: Manuel
+    orcid: https://orcid.org/0000-0001-6326-3519
+    email: manuel@zxe.io
+    website: https://zxe.io
+cff-version: 1.2.0
+date-released: 2024-01-08
+keywords:
+  - CPU
+  - emulator
+  - test
+  - Z80
+  - Zilog
+license: MIT
+message: If you use this software, please cite it using these metadata.
+repository-code: https://github.com/redcode/run-jsmoo-z80-test
+title: run-jsmoo-z80-test
+type: software
+version: 0.1
+url: https://zxe.io/software/run-jsmoo-z80-test

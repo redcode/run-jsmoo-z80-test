@@ -1,0 +1,202 @@
+#!/usr/bin/env ruby
+#
+# run-jsmoo-z80-test v0.1 (2024-01-08)
+# Copyright (C) 2023-2024 Manuel Sainz de Baranda y Goñi
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+# REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+# INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+# LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+# OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+# PERFORMANCE OF THIS SOFTWARE.
+
+if ARGV.empty?
+	puts "Usage: run-jsmoo-z80-test <JSON-file>..."
+	exit -1
+end
+
+require 'z80'
+require 'json'
+
+MEMBERS = {
+	'a'    =>   255, 'af_'  => 65535, 'b'   =>   255, 'bc_' => 65535,
+	'c'    =>   255, 'd'    =>   255, 'de_' => 65535, 'e'   =>   255,
+	'f'    =>   255, 'h'    =>   255, 'hl_' => 65535, 'i'   =>   255,
+	'iff1' =>     1, 'iff2' =>     1, 'im'  =>     2, 'ix'  => 65535,
+	'iy'   => 65535, 'l'    =>   255, 'pc'  => 65535, 'sp'  => 65535,
+	'r'    =>   255, 'wz'   => 65535
+}
+
+UNUSED_MEMBERS    = %w(ei p)
+IO_CODES          = %w(r w)
+$io               =
+$io_value         = nil
+$cpu              = Z80.new
+$cpu.fetch_opcode =
+$cpu.fetch        =
+$cpu.nop          =
+$cpu.read {|ram, address       | ram[address]                           }
+$cpu.write{|ram, address, value| ram[address] = value                   }
+$cpu.in   {|ram, port          | $io = [port, $io_value, 'r']; $io_value}
+$cpu.out  {|ram, port, value   | $io = [port, value,     'w']           }
+
+
+def hex(value, digits)
+	value.to_s(16).upcase.rjust(digits, '0')
+end
+
+
+def io_to_s(io)
+	io ? "#{io[2].upcase}(#{hex(io[0], 4)}, #{hex(io[1], 2)})" : 'N/A'
+end
+
+
+def is_valid_test_state?(state)
+	state.is_a?(Hash) &&
+	!state.any?{|k, v|
+		!UNUSED_MEMBERS.include?(k)                           &&
+		!(k == 'q')                                           &&
+		!(MEMBERS.has_key?(k) && (0..MEMBERS[k]).include?(v)) &&
+		!(k == 'ram' && v.is_a?(Array) && !v.any?{|e|
+			!e.is_a?(Array)            ||
+			e.size != 2                ||
+			!(0..65535).include?(e[0]) ||
+			!(0..255)  .include?(e[1])
+		})
+	}
+end
+
+
+def is_valid_data?(data)
+	data.is_a?(Array) &&
+	!data.any?{|test|
+		!test.is_a?(Hash)                       ||
+		!is_valid_test_state?(test['initial'])  ||
+		!is_valid_test_state?(test['final'  ])  ||
+		!(cycles = test['cycles']).is_a?(Array) ||
+		cycles.any?{|e|
+			!e    .is_a?(Array  ) ||
+			!e[0] .is_a?(Integer) ||
+			!e[2] .is_a?(String ) ||
+			(!e[1].is_a?(Integer) && !e[1].nil?)
+		} ||
+		(!(ports = test['ports']).nil? && (
+			!ports.is_a?(Array)              ||
+			ports.size != 1                  ||
+			!(io = ports.first).is_a?(Array) ||
+			io.size != 3                     ||
+			!(0..65535).include?(io[0])      ||
+			!(0..255)  .include?(io[1])      ||
+			!IO_CODES  .include?(io[2])
+		))
+	}
+end
+
+
+def execute_test(test)
+	errors       = []
+	ram          = Array.new(65536, 0)
+	initial      = test['initial']
+	final        = test['final']
+	$cpu.context = ram
+	$cpu.options = Z80::Option::Model::NEC_NMOS
+	$io          = nil
+
+	if (io = test['ports'])
+		$io_value = (io = io.first)[1]
+	end
+
+	$cpu.power true
+	MEMBERS.each_key{|member| $cpu.__send__("#{member}=", initial[member])}
+	initial['ram'].each{|pair| ram[pair[0]] = pair[1]}
+	cycles = test['cycles'].size
+	errors << ['cycles', $cpu.cycles, cycles] if $cpu.run(cycles) != cycles
+
+	MEMBERS.each_key do |member|
+		if (actual = $cpu.__send__(member)) != (expected = final[member].to_i)
+			digits = member.size == 1 ? 2 : member == 'im' || member.size == 4 ? 1 : 4
+			errors << [member.upcase, hex(actual, digits), hex(expected, digits)]
+		end
+	end
+
+	final['ram'].each do |pair|
+		actual   = ram[pair[0]]
+		expected = pair[1]
+		errors << ["[#{hex(pair[0], 4)}]", hex(actual, 2), hex(expected, 2)] if actual != expected
+	end
+
+	errors << ['I/O', io_to_s($io), io_to_s(io)] if $io != io
+	return errors
+end
+
+read_error_count  =
+bad_file_count    =
+passed_file_count =
+failed_file_count =
+passed_test_count =
+failed_test_count = 0
+
+$stdout.sync = true if $stdout.tty?
+
+ARGV.each do |file_path|
+	if file_path == '-'
+		json = $stdin.read
+		print '-: '
+	else
+		print "#{file_path}: "
+		begin
+			json = File.read(file_path)
+		rescue => e
+			read_error_count += 1
+			puts "Error (#{e.message})"
+			next
+		end
+	end
+
+	if is_valid_data?(data = (JSON.parse(json) rescue nil))
+		failed = false
+
+		data.each do |test|
+			if (errors = execute_test(test)).any?
+				failed_test_count += 1
+
+				if !failed
+					puts "Failed"
+					failed = true
+				end
+
+				print "  #{test['name']}: "
+				puts errors.collect{|e| "#{e[0]} = #{e[1]} {#{e[2]}}"}.join('; ')
+			else
+				passed_test_count += 1
+			end
+		end
+
+		if failed
+			failed_file_count += 1
+		else
+			passed_file_count += 1
+			puts 'OK'
+		end
+	else	
+		bad_file_count += 1
+		puts 'Invalid format'
+	end
+
+	break if file_path == '-'
+end
+
+print "\nRESULTS SUMMARY\nFiles: #{ARGV.size} in total"
+print "; #{passed_file_count} passed"    if 0 != passed_file_count
+print "; #{failed_file_count} failed"    if 0 != failed_file_count
+print "; #{bad_file_count} invalid"      if 0 != bad_file_count
+print "; #{read_error_count} unreadable" if 0 != read_error_count
+print "\nTests: #{passed_test_count + failed_test_count} in total"
+print "; #{passed_test_count} passed"    if 0 != passed_test_count
+print "; #{failed_test_count} failed"    if 0 != failed_test_count
+puts
+exit 0 == read_error_count + bad_file_count + failed_file_count
