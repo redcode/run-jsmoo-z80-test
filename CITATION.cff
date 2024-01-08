@@ -1,4 +1,4 @@
-abstract: A ruby script for running JSMoo's Z80 tests.
+abstract: A Ruby script for running the Z80 tests included in JSMoo.
 authors:
   - family-names: "Sainz de Baranda y Goñi"
     given-names: Manuel
