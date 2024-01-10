@@ -1,6 +1,6 @@
 # `run-jsmoo-z80-test`
 
-This is a small Ruby script that runs the [Z80 tests](https://github.com/raddad772/jsmoo/tree/main/misc/tests/GeneratedTests/z80) included in [JSMoo](https://github.com/raddad772/jsmoo). It requires the [`json`](https://rubygems.org/gems/json) and [`z80`](https://rubygems.org/gems/z80) gems.
+This is a small Ruby script that runs the [Z80 tests](https://github.com/raddad772/jsmoo/tree/main/misc/tests/GeneratedTests/z80) included in [JSMoo](https://github.com/raddad772/jsmoo). It has been written at the request of the [author](https://github.com/raddad772) of JSMoo to check the validity of the tests and help in their improvement. It requires the [`json`](https://rubygems.org/gems/json) and [`z80`](https://rubygems.org/gems/z80) gems.
 
 ## Usage
 
@@ -33,7 +33,7 @@ run-jsmoo-z80-test/run-jsmoo-z80-test jsmoo/misc/tests/GeneratedTests/z80/v1/*.j
 
 ## Results
 
-As of today, the JSMoo tests are not perfect and contain a few inaccuracies, so some will not pass:
+As of today, JSMoo tests are not perfect and contain inaccuracies, therefore some of them fail:
 
 ```
 RESULTS SUMMARY
