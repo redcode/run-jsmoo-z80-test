@@ -6,7 +6,7 @@ authors:
     email: manuel@zxe.io
     website: https://zxe.io
 cff-version: 1.2.0
-date-released: 2024-01-08
+date-released: 2024-01-10
 keywords:
   - CPU
   - emulator
