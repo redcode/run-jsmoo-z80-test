@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# run-jsmoo-z80-test v0.1 (2024-01-08)
+# run-jsmoo-z80-test v0.1
 # Copyright (C) 2023-2024 Manuel Sainz de Baranda y Goñi
 #
 # Permission to use, copy, modify, and/or distribute this software for any
@@ -36,6 +36,7 @@ IO_CODES          = %w(r w)
 $io               =
 $io_value         = nil
 $cpu              = Z80.new
+$cpu.options      = Z80::Option::Model::NEC_NMOS
 $cpu.fetch_opcode =
 $cpu.fetch        =
 $cpu.nop          =
@@ -103,7 +104,6 @@ def execute_test(test)
 	initial      = test['initial']
 	final        = test['final']
 	$cpu.context = ram
-	$cpu.options = Z80::Option::Model::NEC_NMOS
 	$io          = nil
 
 	if (io = test['ports'])
@@ -132,6 +132,7 @@ def execute_test(test)
 	errors << ['I/O', io_to_s($io), io_to_s(io)] if $io != io
 	return errors
 end
+
 
 read_error_count  =
 bad_file_count    =
