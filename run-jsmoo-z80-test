@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# run-jsmoo-z80-test v0.1
+# run-jsmoo-z80-test v0.2
 # Copyright (C) 2023-2024 Manuel Sainz de Baranda y Goñi
 #
 # Permission to use, copy, modify, and/or distribute this software for any
@@ -27,8 +27,8 @@ MEMBERS = {
 	'c'    =>   255, 'd'    =>   255, 'de_' => 65535, 'e'   =>   255,
 	'f'    =>   255, 'h'    =>   255, 'hl_' => 65535, 'i'   =>   255,
 	'iff1' =>     1, 'iff2' =>     1, 'im'  =>     2, 'ix'  => 65535,
-	'iy'   => 65535, 'l'    =>   255, 'pc'  => 65535, 'sp'  => 65535,
-	'r'    =>   255, 'wz'   => 65535
+	'iy'   => 65535, 'l'    =>   255, 'pc'  => 65535, 'q'   =>   255,
+	'sp'   => 65535, 'r'    =>   255, 'wz'  => 65535
 }
 
 UNUSED_MEMBERS    = %w(ei p)
@@ -36,7 +36,7 @@ IO_CODES          = %w(r w)
 $io               =
 $io_value         = nil
 $cpu              = Z80.new
-$cpu.options      = Z80::Option::Model::NEC_NMOS
+$cpu.options      = Z80::Option::Model::ZILOG_NMOS
 $cpu.fetch_opcode =
 $cpu.fetch        =
 $cpu.nop          =
@@ -60,7 +60,6 @@ def is_valid_test_state?(state)
 	state.is_a?(Hash) &&
 	!state.any?{|k, v|
 		!UNUSED_MEMBERS.include?(k)                           &&
-		!(k == 'q')                                           &&
 		!(MEMBERS.has_key?(k) && (0..MEMBERS[k]).include?(v)) &&
 		!(k == 'ram' && v.is_a?(Array) && !v.any?{|e|
 			!e.is_a?(Array)            ||
