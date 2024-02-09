@@ -33,10 +33,10 @@ run-jsmoo-z80-test/run-jsmoo-z80-test jsmoo/misc/tests/GeneratedTests/z80/v1/*.j
 
 ## Results
 
-As of today, JSMoo tests are not perfect and contain inaccuracies, therefore some of them fail:
+The [`z80`](https://rubygems.org/gems/z80) gem passes the full set of [Z80 tests](https://github.com/raddad772/jsmoo/tree/main/misc/tests/GeneratedTests/z80) included in [JSMoo](https://github.com/raddad772/jsmoo):
 
 ```
 RESULTS SUMMARY
-Files: 1610 in total; 1598 passed; 12 failed
-Tests: 1610000 in total; 1602680 passed; 7320 failed
+Files: 1610 in total; 1610 passed
+Tests: 1610000 in total; 1610000 passed
 ```

@@ -6,7 +6,7 @@ authors:
     email: manuel@zxe.io
     website: https://zxe.io
 cff-version: 1.2.0
-date-released: 2024-01-10
+date-released: 2024-02-09
 keywords:
   - CPU
   - emulator
@@ -18,5 +18,5 @@ message: If you use this software, please cite it using these metadata.
 repository-code: https://github.com/redcode/run-jsmoo-z80-test
 title: run-jsmoo-z80-test
 type: software
-version: 0.1
+version: 0.2
 url: https://zxe.io/software/run-jsmoo-z80-test
